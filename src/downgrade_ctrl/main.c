@@ -8,6 +8,7 @@
 #include <pspkernel.h>
 #include <pspidstorage.h>
 #include <pspsysmem_kernel.h>
+#include <pspiofilemgr_kernel.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -57,7 +58,20 @@ int ApplyFirmware(void)
     SfoEntry *entries = (SfoEntry *)((char *)g_sfo_buffer + sizeof(SfoHeader));
 	
 	/* Lets open the updater */
-	char *file = (sceKernelGetModel() == 4) ? ("ef0:/PSP/GAME/UPDATE/EBOOT.pbp") : ("ms0:/PSP/GAME/UPDATE/EBOOT.pbp");
+	char file[] = "ef0:/PSP/GAME/UPDATE/EBOOT.pbp";
+	SceIoStat stats;
+	int status;
+
+	status = sceIoGetstat(file, &stats);
+
+	if(status < 0) {
+		file[0] = 'm';
+		file[1] = 's';
+		status = sceIoGetstat(file, &stats);
+	}
+
+
+
 	
 	/* set k1 */
 	u32 k1 = pspSdkSetK1(0);

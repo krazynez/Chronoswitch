@@ -15,6 +15,8 @@ u32 getBaryon(void);
 int launch_updater(void);
 int delete_resume_game(void);
 
+extern char eboot_path[];
+
 extern int (* pspKernelGetModel)(void);
 extern int (* pspSysconGetBaryonVersion)(u32 *baryon);
 extern SceModule2 *(* pspKernelFindModuleByName)(const char *name);

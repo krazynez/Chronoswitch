@@ -13,6 +13,7 @@
 #include <pspsysmem_kernel.h>
 #include <psploadexec_kernel.h>
 #include <psploadcore.h>
+#include <pspiofilemgr.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -28,7 +29,9 @@ PSP_MODULE_INFO("Chronoswitch", 0, 1, 1);
 PSP_MAIN_THREAD_ATTR(PSP_THREAD_ATTR_VFPU);
 PSP_HEAP_SIZE_KB(3 << 10);
 
-#define DOWNGRADER_VER    ("7.2")
+#define DOWNGRADER_VER    ("7.3")
+
+char eboot_path[] = "ef0:/PSP/GAME/UPDATE/EBOOT.PBP";
 
 typedef struct __attribute__((packed))
 {
@@ -50,7 +53,7 @@ typedef struct __attribute__((packed))
         short unknown; // 16
 } SfoEntry;
     
-u32 get_updater_version(u32 is_pspgo)
+u32 get_updater_version()
 {
     int i;
     char *fw_data = NULL;
@@ -60,10 +63,20 @@ u32 get_updater_version(u32 is_pspgo)
     SfoEntry *entries = (SfoEntry *)((char *)sfo_buffer + sizeof(SfoHeader));
     
     /* Lets open the updater */
-    char *file = (is_pspgo) ? ("ef0:/PSP/GAME/UPDATE/EBOOT.PBP") : ("ms0:/PSP/GAME/UPDATE/EBOOT.PBP");
-    
+	SceIoStat stats;
+	int status;
+
+	status = sceIoGetstat(eboot_path, &stats);
+
+	if(status < 0) {
+		eboot_path[0] = 'm';
+		eboot_path[1] = 's';
+		status = sceIoGetstat(eboot_path, &stats);
+	}
+
+
     /* open file */
-    SceUID fd = sceIoOpen(file, PSP_O_RDONLY, 0777);
+    SceUID fd = sceIoOpen(eboot_path, PSP_O_RDONLY, 0777);
     
     /* check for failure */
     if (fd < 0)
@@ -139,7 +152,12 @@ int main(int argc, char *argv[])
         "Contributions:" "\n"
         "\t"    "6.31/6.35 Support added by Davee" "\n"
         "\t"    "6.38/6.39/6.60 Support added by some1" "\n"
-        "\t"    "6.61 Support added by qwikrazor87" "\n" "\n"
+        "\t"    "6.61 Support added by qwikrazor87" "\n"
+        "\t"    "Removed factory firmware limits (and more) by TheZett" "\n"
+        "\t"    "GO ms0/ef0 UPDATE support added by krazynez" "\n" "\n"
+        "Testers:" "\n"
+        "\t"    "Peter Lustig" "\n"
+        "\t"    "Nall (nallwolf)" "\n" "\n"
         
         "Web:" "\n"
         "\t"    "https://lolhax.org" "\n" "\n"
@@ -254,7 +272,7 @@ int main(int argc, char *argv[])
     sceKernelDelayThread(4*1000*1000);
 
     /* get the updater version */
-    u32 upd_ver = get_updater_version(model == 4);
+    u32 upd_ver = get_updater_version();
 
 	/* make sure that we are not attempting to downgrade a PSP below its firmware boundaries */
 	
