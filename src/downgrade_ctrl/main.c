@@ -15,7 +15,7 @@
 #include <systemctrl.h>
 #include <libinfinity.h>
 
-#include <common.h>
+#include "common.h"
 
 #include "utils.h"
 #include "patch_table.h"
