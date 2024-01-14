@@ -20,6 +20,8 @@
 #include <stdarg.h>
 #include <malloc.h>
 
+#include "common.h"
+
 #include "utils.h"
 #include "kernel_land.h"
 #include "kernel_exploit.h"
@@ -31,7 +33,6 @@ PSP_HEAP_SIZE_KB(3 << 10);
 
 #define DOWNGRADER_VER    ("7.3")
 
-char eboot_path[] = "ef0:/PSP/GAME/UPDATE/EBOOT.PBP";
 
 typedef struct __attribute__((packed))
 {

@@ -14,14 +14,13 @@
 #include <systemctrl.h>
 #include <libinfinity.h>
 
+#include "common.h"
+
 #include "utils.h"
 #include "patch_table.h"
 #include "decrypt.h"
 
 PSP_MODULE_INFO("DowngraderCTRL", 0x3007, 1, 0);
-
-
-char eboot_path[] = "ef0:/PSP/GAME/UPDATE/EBOOT.PBP";
 
 
 /* function pointers */
