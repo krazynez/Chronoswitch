@@ -3,7 +3,7 @@ release: all
 ifeq ($(UNAME), Linux)
 	WINEPREFIX=$(shell pwd)/prefix wine bin/prxEncrypter $(TARGET).prx
 else
-	bin/prxEncrypter $(TARGET).prx
+	bin\prxEncrypter $(TARGET).prx
 endif
 	pack-pbp $(EXTRA_TARGETS) PARAM.SFO icon0.png NULL NULL NULL NULL data.psp NULL
 	rm -f data.psp
