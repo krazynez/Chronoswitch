@@ -21,7 +21,6 @@
 #include <malloc.h>
 
 #include "common.h"
-#include "kubridge.h"
 
 #include "utils.h"
 #include "kernel_land.h"
@@ -74,12 +73,12 @@ u32 get_updater_version(char *argv)
 		eboot_path[0] = 'm';
 		eboot_path[1] = 's';
 	}
-    
+
     /* check for failure */
     int model = execKernelFunction(getModel);
-	SceUID fd = -1;
-	if(model == 4 && strcasecmp(argv, "ef0") > 0) { return 0xFA4E; /*FAKE some reason CS on ef0 does not like reading from ms0 */}
-	if ((fd = sceIoOpen(eboot_path, PSP_O_RDONLY, 0777) < 0))
+	if(model == 4 && (strcasecmp(argv, "ef0")) > 0) { return 0xFA4E; /*FAKE some reason CS on ef0 does not like reading from ms0 */}
+	SceUID fd = sceIoOpen(eboot_path, PSP_O_RDONLY, 0777);
+	if (fd < 0)
 	{
 		printf("\nHmmmm? Are you sure you have EBOOT.PBP in PSP/GAME/UPDATE/ ???\n");
 		/* error firmware */

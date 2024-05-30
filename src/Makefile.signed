@@ -21,7 +21,7 @@ CXXFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti
 ASFLAGS = $(CFLAGS) -c
  
 LIBDIR = lib
-LIBS = -lpsppower -lpspkubridge
+LIBS = -lpsppower
 
 PSP_FW_VERSION = 271
 
