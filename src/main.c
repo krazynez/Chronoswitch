@@ -21,17 +21,18 @@
 #include <malloc.h>
 
 #include "common.h"
+#include "kubridge.h"
 
 #include "utils.h"
 #include "kernel_land.h"
 #include "kernel_exploit.h"
 #include "rebootex.h"
 
-PSP_MODULE_INFO("Chronoswitch", 0, 1, 1);
+PSP_MODULE_INFO("Chronoswitch", 0, 7, 4);
 PSP_MAIN_THREAD_ATTR(PSP_THREAD_ATTR_VFPU);
 PSP_HEAP_SIZE_KB(3 << 10);
 
-#define DOWNGRADER_VER    ("7.3")
+#define DOWNGRADER_VER    ("7.4")
 
 
 typedef struct __attribute__((packed))
@@ -54,7 +55,7 @@ typedef struct __attribute__((packed))
         short unknown; // 16
 } SfoEntry;
     
-u32 get_updater_version()
+u32 get_updater_version(char *argv)
 {
     int i;
     char *fw_data = NULL;
@@ -72,25 +73,24 @@ u32 get_updater_version()
 	if(status < 0) {
 		eboot_path[0] = 'm';
 		eboot_path[1] = 's';
-		status = sceIoGetstat(eboot_path, &stats);
 	}
-
-
-    /* open file */
-    SceUID fd = sceIoOpen(eboot_path, PSP_O_RDONLY, 0777);
     
     /* check for failure */
-    if (fd < 0)
-    {
-        /* error firmware */
-        return 0xFFF;
-    }
-    
-    /* read the PBP header */
-    sceIoRead(fd, pbp_header, sizeof(pbp_header));
-    
-    /* seek to the SFO */
-    sceIoLseek32(fd, pbp_header[8/4], PSP_SEEK_SET);
+    int model = execKernelFunction(getModel);
+	SceUID fd = -1;
+	if(model == 4 && strcasecmp(argv, "ef0") > 0) { return 0xFA4E; /*FAKE some reason CS on ef0 does not like reading from ms0 */}
+	if ((fd = sceIoOpen(eboot_path, PSP_O_RDONLY, 0777) < 0))
+	{
+		printf("\nHmmmm? Are you sure you have EBOOT.PBP in PSP/GAME/UPDATE/ ???\n");
+		/* error firmware */
+		return 0xFFF;
+	}
+
+	/* read the PBP header */
+	sceIoRead(fd, pbp_header, sizeof(pbp_header));
+
+	/* seek to the SFO */
+	sceIoLseek32(fd, pbp_header[8/4], PSP_SEEK_SET);
     
     /* calculate the size of the SFO */
     u32 sfo_size = pbp_header[12/4] - pbp_header[8/4];
@@ -102,12 +102,12 @@ u32 get_updater_version()
         sceIoClose(fd);
         return 0xFFF;
     }
-    
-    /* read the sfo */
-    sceIoRead(fd, sfo_buffer, sizeof(sfo_buffer));
-    
-    /* close the file */
-    sceIoClose(fd);
+	
+	/* read the sfo */
+	sceIoRead(fd, sfo_buffer, sizeof(sfo_buffer));
+
+	/* close the file */
+	sceIoClose(fd);
     
     /* now parse the SFO */
     for (i = 0; i < header->count; i++)
@@ -273,7 +273,25 @@ int main(int argc, char *argv[])
     sceKernelDelayThread(4*1000*1000);
 
     /* get the updater version */
-    u32 upd_ver = get_updater_version();
+    u32 upd_ver = get_updater_version(argv);
+
+	if (upd_ver == 0xFFF) {
+		printf("\nPress R to exit...\n");
+		while (1)
+        {
+            sceCtrlPeekBufferPositive(&pad_data, 1);
+            
+            /* filter out previous buttons */
+            cur_buttons = pad_data.Buttons & ~prev_buttons;
+            prev_buttons = pad_data.Buttons;
+            
+            /* check for cross */
+            if (cur_buttons & PSP_CTRL_RTRIGGER)
+            {
+                ErrorExit(5000, "Exiting in 5 seconds.\n");
+            }
+        }
+	}
 
 	/* make sure that we are not attempting to downgrade a PSP below its firmware boundaries */
 	
@@ -391,8 +409,13 @@ int main(int argc, char *argv[])
     }
     
     /* do confirmation stuff */
-    printf("\n" "Will attempt to Downgrade: %X.%X -> %X.%X.\n", (g_devkit_version >> 24) & 0xF, ((g_devkit_version >> 12) & 0xF0) | ((g_devkit_version >> 8) & 0xF), (upd_ver >> 8) & 0xF, upd_ver & 0xFF);
-    printf("X to continue, R to exit.\n");
+	if(model == 4 && (strcasecmp(argv, "ef0") > 0)) {
+    	printf("X to continue to Downgrade, R to exit.\n");
+	}
+	else {
+    	printf("\n" "Will attempt to Downgrade: %X.%X -> %X.%X.\n", (g_devkit_version >> 24) & 0xF, ((g_devkit_version >> 12) & 0xF0) | ((g_devkit_version >> 8) & 0xF), (upd_ver >> 8) & 0xF, upd_ver & 0xFF);
+    	printf("X to continue, R to exit.\n");
+	}
     
     /* get button */
     while (1)
