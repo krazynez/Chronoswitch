@@ -75,10 +75,10 @@ int ApplyFirmware(void)
 	u32 k1 = pspSdkSetK1(0);
 	
 	/* lets open the file */
-	SceUID fd = sceIoOpen(eboot_path, PSP_O_RDONLY, 0777);
+	SceUID fd;
 	
 	/* check for failure */
-	if (fd < 0)
+	if ((fd = sceIoOpen(eboot_path, PSP_O_RDONLY, 0777)) < 0)
 	{
 		/* rage */
 		pspSdkSetK1(k1);

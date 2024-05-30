@@ -29,6 +29,7 @@ SceUID (* pspIoOpen)(char *file, int flags, SceMode mode) = NULL;
 int (* pspIoWrite)(SceUID fd, void *data, u32 len) = NULL;
 int (* pspIoClose)(SceUID fd) = NULL;
 
+
 /* globals */
 struct SceKernelLoadExecVSHParam g_exec_param;
 
@@ -221,7 +222,12 @@ int patch_loadexec_pspgo(void)
 	
 	/* clear the caches */
 	KClearCaches();
-
+	SceIoStat stats;
+	int status = sceIoGetstat(eboot_path, &stats);
+	if(status < 0) {
+		eboot_path[0] = 'm';
+		eboot_path[1] = 's';
+	}
 	if(strcasecmp(eboot_path, "ms0")>=0) {
 		return pspKernelLoadExecVSHMs1(eboot_path, &g_exec_param);
 	}

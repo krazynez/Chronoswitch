@@ -25,5 +25,7 @@ extern int (* pspKernelLoadExecVSHMs1)(const char *path, struct SceKernelLoadExe
 extern SceUID (* pspIoOpen)(char *file, int flags, SceMode mode);
 extern int (* pspIoWrite)(SceUID fd, void *data, u32 len);
 extern int (* pspIoClose)(SceUID fd);
+extern int (* pspIoRead)(int fd, void* data, int size);
+extern int (* pspIoLseek32)(int fd, int offset, int whence);
 
 #endif /* __KERNEL_LAND_H__ */
