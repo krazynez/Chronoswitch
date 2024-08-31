@@ -27,11 +27,11 @@
 #include "kernel_exploit.h"
 #include "rebootex.h"
 
-PSP_MODULE_INFO("Chronoswitch", 0, 7, 4);
+PSP_MODULE_INFO("Chronoswitch", 0, 7, 5);
 PSP_MAIN_THREAD_ATTR(PSP_THREAD_ATTR_VFPU);
 PSP_HEAP_SIZE_KB(3 << 10);
 
-#define DOWNGRADER_VER    ("7.4")
+#define DOWNGRADER_VER    ("7.5")
 
 
 typedef struct __attribute__((packed))
@@ -76,8 +76,14 @@ u32 get_updater_version(char *argv)
 
     /* check for failure */
     int model = execKernelFunction(getModel);
-	if(model == 4 && (strcasecmp(argv, "ef0")) > 0) { return 0xFA4E; /*FAKE some reason CS on ef0 does not like reading from ms0 */}
+	if(model == 4 && strstr(argv, "ef0")) { return 0xFA4E; /* FAKE some reason CS on ef0 does not like reading from ms0 */ }
+	/*if(model == 4 && strstr(argv, "ef0")) { 
+	  fd = execKernelFunction(reassign);	
+	}
+	else  {
+	*/
 	SceUID fd = sceIoOpen(eboot_path, PSP_O_RDONLY, 0777);
+	//}
 	if (fd < 0)
 	{
 		printf("\nHmmmm? Are you sure you have EBOOT.PBP in PSP/GAME/UPDATE/ ???\n");
@@ -157,11 +163,12 @@ int main(int argc, char *argv[])
         "\t"    "GO ms0/ef0 UPDATE support added by krazynez" "\n" "\n"
         "Testers:" "\n"
         "\t"    "Peter Lustig" "\n"
-        "\t"    "Nall (nallwolf)" "\n" "\n"
+        "\t"    "Nall (nallwolf)" "\n"
+        "\t"    "Total Kommando" "\n" "\n"
         
         "Web:" "\n"
-        "\t"    "https://lolhax.org" "\n" "\n"
-        , DOWNGRADER_VER, __DATE__, __TIME__);
+        "\t"    "https://lolhax.org" "\n"
+        , DOWNGRADER_VER, __DATE__, __TIME__ "\n");
 
 #ifdef HBL_SUKKIRI    
     /* Clear html param to 0 */
@@ -272,7 +279,7 @@ int main(int argc, char *argv[])
     sceKernelDelayThread(4*1000*1000);
 
     /* get the updater version */
-    u32 upd_ver = get_updater_version(argv);
+    u32 upd_ver = get_updater_version(argv[0]);
 
 	if (upd_ver == 0xFFF) {
 		printf("\nPress R to exit...\n");
@@ -408,7 +415,7 @@ int main(int argc, char *argv[])
     }
     
     /* do confirmation stuff */
-	if(model == 4 && (strcasecmp(argv, "ef0") > 0)) {
+	if(model == 4 && strstr(argv[0], "ef0")) {
     	printf("X to continue to Downgrade, R to exit.\n");
 	}
 	else {

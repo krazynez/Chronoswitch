@@ -1,12 +1,13 @@
 UNAME := $(shell uname)
 release: all
 ifeq ($(UNAME), Linux)
-	WINEPREFIX=$(shell pwd)/prefix wine bin/prxEncrypter.exe $(TARGET).prx
+	bin/psptools/pack_ms_game.py --vanity "$(PSP_EBOOT_TITLE)" EBOOT.PBP EBOOT.PBP
 else
-	bin\prxEncrypter.exe $(TARGET).prx
+	bin\\psptools\\pack_ms_game.py --vanity "$(PSP_EBOOT_TITLE)" EBOOT.PBP EBOOT.PBP
 endif
-	pack-pbp $(EXTRA_TARGETS) PARAM.SFO icon0.png NULL NULL NULL NULL data.psp NULL
-	rm -f data.psp
+	unpack-pbp EBOOT.PBP
+	pack-pbp $(EXTRA_TARGETS) PARAM.SFO icon0.png NULL NULL NULL NULL DATA.PSP NULL
+	rm -f DATA.PSP
 	rm -f downgrade_ctrl.h
 	rm -f downgrade660_ctrl.h
 	@mkdir -p PSP/GAME/ChronoSwitch
@@ -26,7 +27,7 @@ LIBS = -lpsppower
 PSP_FW_VERSION = 271
 
 EXTRA_TARGETS = EBOOT.PBP
-PSP_EBOOT_TITLE = Chronoswitch Downgrader v7.4
+PSP_EBOOT_TITLE = Chronoswitch Downgrader v7.5
 
 BUILD_PRX = 1
 
