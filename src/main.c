@@ -74,16 +74,17 @@ u32 get_updater_version(char *argv)
 		eboot_path[1] = 's';
 	}
 
+	status = sceIoGetstat(eboot_path, &stats);
+
+	if(status < 0 && !strstr(argv, "ef0")) {
+		printf("\nHmmmm? Are you sure you have EBOOT.PBP in PSP/GAME/UPDATE/ ???\n");
+		return 0xFFF;
+	}
+
     /* check for failure */
     int model = execKernelFunction(getModel);
 	if(model == 4 && strstr(argv, "ef0")) { return 0xFA4E; /* FAKE some reason CS on ef0 does not like reading from ms0 */ }
-	/*if(model == 4 && strstr(argv, "ef0")) { 
-	  fd = execKernelFunction(reassign);	
-	}
-	else  {
-	*/
 	SceUID fd = sceIoOpen(eboot_path, PSP_O_RDONLY, 0777);
-	//}
 	if (fd < 0)
 	{
 		printf("\nHmmmm? Are you sure you have EBOOT.PBP in PSP/GAME/UPDATE/ ???\n");
@@ -416,11 +417,11 @@ int main(int argc, char *argv[])
     
     /* do confirmation stuff */
 	if(model == 4 && strstr(argv[0], "ef0")) {
-    	printf("X to continue to Downgrade, R to exit.\n");
+    	printf("\nX to continue, R to exit.\n");
 	}
 	else {
-    	printf("\n" "Will attempt to Downgrade: %X.%X -> %X.%X.\n", (g_devkit_version >> 24) & 0xF, ((g_devkit_version >> 12) & 0xF0) | ((g_devkit_version >> 8) & 0xF), (upd_ver >> 8) & 0xF, upd_ver & 0xFF);
-    	printf("X to continue, R to exit.\n");
+    	printf("\n" "Currently Running: %X.%X going to Downgrade/Reinstall: %X.%X.\n", (g_devkit_version >> 24) & 0xF, ((g_devkit_version >> 12) & 0xF0) | ((g_devkit_version >> 8) & 0xF), (upd_ver >> 8) & 0xF, upd_ver & 0xFF);
+    	printf("\nX to continue, R to exit.\n");
 	}
     
     /* get button */
@@ -431,6 +432,7 @@ int main(int argc, char *argv[])
         /* filter out previous buttons */
         cur_buttons = pad_data.Buttons & ~prev_buttons;
         prev_buttons = pad_data.Buttons;
+
         
         /* check for cross */
         if (cur_buttons & PSP_CTRL_CROSS)
