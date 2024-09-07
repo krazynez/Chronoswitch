@@ -27,11 +27,11 @@
 #include "kernel_exploit.h"
 #include "rebootex.h"
 
-PSP_MODULE_INFO("Chronoswitch", 0, 7, 5);
+PSP_MODULE_INFO("Chronoswitch", 0, 7, 6);
 PSP_MAIN_THREAD_ATTR(PSP_THREAD_ATTR_VFPU);
 PSP_HEAP_SIZE_KB(3 << 10);
 
-#define DOWNGRADER_VER    ("7.5")
+#define DOWNGRADER_VER    ("7.6")
 
 
 typedef struct __attribute__((packed))
@@ -76,6 +76,17 @@ u32 get_updater_version(char *argv)
 
 	status = sceIoGetstat(eboot_path, &stats);
 
+	int go_fw = -1;
+
+	int go_check = sceIoOpen(eboot_path, PSP_O_RDONLY, 0);
+	sceIoLseek32(go_check, 0x346F, PSP_SEEK_SET);
+	u8 go_buf[1] = { 0 };
+	sceIoRead(go_check, go_buf, 1);
+	if(go_buf[0] == 0x63)
+		go_fw = 1;
+	sceIoLseek32(go_check, 0, PSP_SEEK_SET);
+	sceIoClose(go_check);
+
 	if(status < 0 && !strstr(argv, "ef0")) {
 		printf("\nHmmmm? Are you sure you have EBOOT.PBP in PSP/GAME/UPDATE/ ???\n");
 		return 0xFFF;
@@ -83,7 +94,13 @@ u32 get_updater_version(char *argv)
 
     /* check for failure */
     int model = execKernelFunction(getModel);
-	if(model == 4 && strstr(argv, "ef0")) { return 0xFA4E; /* FAKE some reason CS on ef0 does not like reading from ms0 */ }
+	if(model == 4 && go_fw < 0) {
+		pspDebugScreenSetTextColor(0xCC0000FF);
+		printf("\nYour running OFW from a X000 Series, it should be for the GO OFW\n");
+    	pspDebugScreenSetTextColor(0x00BFFF);
+		return 0xFFF;
+	}
+	else if(model == 4 && strstr(argv, "ef0") && go_fw >= 0) { return 0xFA4E; /* FAKE some reason CS on ef0 does not like reading from ms0 */ }
 	SceUID fd = sceIoOpen(eboot_path, PSP_O_RDONLY, 0777);
 	if (fd < 0)
 	{
@@ -149,7 +166,8 @@ int main(int argc, char *argv[])
     
     /* initialise the PSP screen */
     pspDebugScreenInit();
-    pspDebugScreenSetTextColor(0x00D05435);
+    pspDebugScreenSetTextColor(0x00BFFF);
+    //pspDebugScreenSetTextColor(0x00D05435);
     
     /* display welcome message */
     printf(
