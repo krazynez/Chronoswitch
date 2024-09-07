@@ -9,6 +9,9 @@ Copy the official firmware update to `PSP/GAME/UPDATE/EBOOT.PBP` on your memory 
 The downgrader is "signed", and can be launched without having a custom firmware installed. Once you run the application, follow the on-screen instructions.
 
 ## Changelog
+### Version 7.6
+* Changed Default color, makes it a bit easier to read.
+* Detect which OFW you have to make sure your flashing the proper model OFW. ( i.e You can only flash GO OFW on GO and vice versa )
 ### Version 7.5
 * Updated Tools to encrypt EBOOT to be OS agnostic ( from Yoti's psp_pspident )
 * Bugfix: GO had issue running with just Infinity/OFW running.
