@@ -100,6 +100,12 @@ u32 get_updater_version(char *argv)
     	pspDebugScreenSetTextColor(0x00BFFF);
 		return 0xFFF;
 	}
+	else if(model != 4 && go_fw == 1) {
+		pspDebugScreenSetTextColor(0xCC0000FF);
+		printf("\nYour running OFW from a GO, it should be for the X000 OFW Series\n");
+    	pspDebugScreenSetTextColor(0x00BFFF);
+		return 0xFFF;
+	}
 	else if(model == 4 && strstr(argv, "ef0") && go_fw >= 0) { return 0xFA4E; /* FAKE some reason CS on ef0 does not like reading from ms0 */ }
 	SceUID fd = sceIoOpen(eboot_path, PSP_O_RDONLY, 0777);
 	if (fd < 0)
