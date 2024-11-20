@@ -27,11 +27,11 @@
 #include "kernel_exploit.h"
 #include "rebootex.h"
 
-PSP_MODULE_INFO("Chronoswitch", 0, 7, 6);
+PSP_MODULE_INFO("Chronoswitch", 0, 7, 61);
 PSP_MAIN_THREAD_ATTR(PSP_THREAD_ATTR_VFPU);
 PSP_HEAP_SIZE_KB(3 << 10);
 
-#define DOWNGRADER_VER    ("7.6")
+#define DOWNGRADER_VER    ("7.6.1")
 
 
 typedef struct __attribute__((packed))
@@ -128,6 +128,7 @@ u32 get_updater_version(char *argv)
     if (sfo_size > sizeof(sfo_buffer))
     {
         /* too much */
+		printf("\nTo much deditated wammm ... Perhaps not have all your plugins running right now ...\n");
         sceIoClose(fd);
         return 0xFFF;
     }
@@ -153,6 +154,7 @@ u32 get_updater_version(char *argv)
     /* see if we went through all the data */
     if (i == header->count)
     {
+		printf("\nHmmm SFO count is too big ... Looks like the EBOOT.PBP is corrupted somehow.\n");
         return 0xFFF;
     }
     
@@ -178,7 +180,7 @@ int main(int argc, char *argv[])
     /* display welcome message */
     printf(
         "Chronoswitch Downgrader" "\n"
-        "Version %s. Built %s %s" "\n" "\n"
+        "Version %s Built %s %s" "\n" "\n"
         
         "Contributions:" "\n"
         "\t"    "6.31/6.35 Support added by Davee" "\n"
