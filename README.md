@@ -1,3 +1,6 @@
+# Repo moved to [ChronoSwitch](https://github.com/PSP-Archive/Chronoswitch)
+
+
 # Chronoswitch Downgrader
 Chronoswitch is a downgrader for the Playstation Portable (PSP).
 
